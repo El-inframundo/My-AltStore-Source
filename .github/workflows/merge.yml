@@ -31,16 +31,18 @@ jobs:
           const axios = require('axios');
 
           const sources = [
+            "https://repo.apptesters.org",
             "https://repository.apptesters.org",
-            "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps_esign.json",
-            "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps.json",
+            "https://ipa.cypwn.xyz/cypwn.json",
             "https://quarksources.github.io/dist/quantumsource.min.json",
             "https://quarksources.github.io/dist/altstore-complete.min.json",
-            "https://altstore.oatmealdome.me/",
-            "https://alt.crystall1ne.dev/",
-            "https://ipa.cypwn.xyz/cypwn.json",
+            "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps.json",
+            "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps_esign.json",
             "https://wuxu1.github.io/wuxu-complete-plus.json",
+            "https://wuxu1.github.io/wuxu-complete.json",
             "https://qnblackcat.github.io/AltStore/apps.json",
+            "https://alt.crystall1ne.dev/",
+            "https://altstore.oatmealdome.me/",
             "https://alt.getutm.app",
             "https://provenance-emu.com/apps.json",
             "https://theodyssey.dev/altstore/odysseysource.json",
@@ -48,7 +50,10 @@ jobs:
             "https://bunduuk.github.io/altstore-source/apps.json",
             "https://flyinghead.github.io/flycast-builds/altstore.json",
             "https://raw.githubusercontent.com/vizunchik/AltStoreRus/master/apps.json",
-            "https://wuxu1.github.io/wuxu-complete.json"
+            "https://burritosoftware.github.io/altstore/channels.json",
+            "https://raw.githubusercontent.com/Balackburn/YTLitePlusAltstore/main/apps.json",
+            "https://raw.githubusercontent.com/arichornlover/AltStore-Repo/main/apps.json",
+            "https://raw.githubusercontent.com/PojavLauncherTeam/PojavLauncher_iOS/main/apps.json"
           ];
 
           async function mergeSources() {
@@ -59,13 +64,19 @@ jobs:
                 console.log("Fetching:", source);
 
                 const response = await axios.get(source, {
-                  timeout: 15000
+                  timeout: 20000,
+                  headers: {
+                    'User-Agent': 'Mozilla/5.0'
+                  }
                 });
 
                 const data = response.data;
 
                 if (data.apps && Array.isArray(data.apps)) {
+                  console.log("Apps Found:", data.apps.length);
                   allApps.push(...data.apps);
+                } else {
+                  console.log("No apps found:", source);
                 }
 
               } catch (e) {
@@ -77,7 +88,11 @@ jobs:
             const names = new Set();
 
             for (const app of allApps) {
-              if (app.name && !names.has(app.name)) {
+              if (
+                app &&
+                app.name &&
+                !names.has(app.name)
+              ) {
                 names.add(app.name);
                 uniqueApps.push(app);
               }
@@ -101,7 +116,7 @@ jobs:
               JSON.stringify(output, null, 2)
             );
 
-            console.log("Done:", uniqueApps.length);
+            console.log("Total Apps:", uniqueApps.length);
           }
 
           mergeSources();
