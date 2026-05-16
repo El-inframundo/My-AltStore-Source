@@ -84,19 +84,8 @@ jobs:
               }
             }
 
-            const uniqueApps = [];
-            const names = new Set();
-
-            for (const app of allApps) {
-              if (
-                app &&
-                app.name &&
-                !names.has(app.name)
-              ) {
-                names.add(app.name);
-                uniqueApps.push(app);
-              }
-            }
+            // بدون حذف التكرار
+            const uniqueApps = allApps;
 
             const output = {
               name: "Adnan Combined Store",
