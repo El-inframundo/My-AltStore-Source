@@ -31,7 +31,6 @@ jobs:
           const axios = require('axios');
 
           const sources = [
-            "https://repo.apptesters.org",
             "https://repository.apptesters.org",
             "https://ipa.cypwn.xyz/cypwn.json",
             "https://quarksources.github.io/dist/quantumsource.min.json",
@@ -56,56 +55,92 @@ jobs:
             "https://raw.githubusercontent.com/PojavLauncherTeam/PojavLauncher_iOS/main/apps.json"
           ];
 
+          async function fetchJSON(url) {
+            try {
+              console.log("Fetching:", url);
+              const response = await axios.get(url, {
+                timeout: 30000,
+                headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AltStore-Merger/1.0)' }
+              });
+
+              let data = response.data;
+
+              // بعض المصادر يكون الـ JSON ملفوف في key ثانوي
+              if (data.data && data.data.apps) {
+                data = data.data;
+              }
+
+              return data;
+            } catch (e) {
+              console.log("  ⚠️ Failed:", url, e.message);
+              return null;
+            }
+          }
+
           async function mergeSources() {
             let allApps = [];
+            const seenBundleIDs = {};
 
             for (const source of sources) {
-              try {
-                console.log("Fetching:", source);
+              const data = await fetchJSON(source);
+              if (!data) continue;
 
-                const response = await axios.get(source, {
-                  timeout: 20000,
-                  headers: {
-                    'User-Agent': 'Mozilla/5.0'
-                  }
-                });
+              let apps = [];
+              if (data.apps && Array.isArray(data.apps)) {
+                apps = data.apps;
+              } else if (Array.isArray(data)) {
+                apps = data;
+              } else {
+                console.log("  ⚠️ No apps array found");
+                continue;
+              }
 
-                const data = response.data;
+              console.log("  ✅ Apps found:", apps.length);
 
-                if (data.apps && Array.isArray(data.apps)) {
-                  console.log("Apps Found:", data.apps.length);
-                  allApps.push(...data.apps);
-                } else {
-                  console.log("No apps found:", source);
+              for (const app of apps) {
+                const bundleID = app.bundleIdentifier;
+                if (!bundleID) {
+                  allApps.push(app);
+                  continue;
                 }
 
-              } catch (e) {
-                console.log("Failed:", source);
+                if (seenBundleIDs[bundleID]) {
+                  // دمج الإصدارات من مصادر مختلفة
+                  const existing = seenBundleIDs[bundleID];
+                  if (app.versions && Array.isArray(app.versions)) {
+                    if (!existing.versions) existing.versions = [];
+                    for (const v of app.versions) {
+                      const exists = existing.versions.some(
+                        ev => ev.version === v.version && ev.date === v.date
+                      );
+                      if (!exists) existing.versions.push(v);
+                    }
+                  }
+                  // تحديث معلومات التطبيق إذا كانت أحدث
+                  if (!existing.iconURL && app.iconURL) existing.iconURL = app.iconURL;
+                  if (!existing.developerName && app.developerName) existing.developerName = app.developerName;
+                } else {
+                  seenBundleIDs[bundleID] = app;
+                  allApps.push(app);
+                }
               }
             }
-
-            // بدون حذف التكرار
-            const uniqueApps = allApps;
 
             const output = {
               name: "Adnan Combined Store",
               identifier: "com.adnan.combined",
-              subtitle: "Merged IPA Sources",
-              description: "Auto merged AltStore sources",
-              iconURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
+              subtitle: "Merged IPA Sources (Deduplicated)",
+              description: "Auto-merged AltStore sources from 22+ repositories. Updated every 6 hours via GitHub Actions.",
+              iconURL: "https://altstore.io/img/altstore-logo.png",
               headerURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
               website: "https://github.com/",
               tintColor: "#3498db",
-              apps: uniqueApps,
+              apps: allApps,
               news: []
             };
 
-            fs.writeFileSync(
-              "apps.json",
-              JSON.stringify(output, null, 2)
-            );
-
-            console.log("Total Apps:", uniqueApps.length);
+            fs.writeFileSync("apps.json", JSON.stringify(output, null, 2));
+            console.log("\n✅ Done! Total unique apps:", allApps.length);
           }
 
           mergeSources();
@@ -116,8 +151,8 @@ jobs:
 
       - name: Commit apps.json
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add apps.json
-          git commit -m "Update merged apps" || echo "No changes"
+          git diff --cached --quiet || git commit -m "chore: update merged AltStore sources [$(date +'%Y-%m-%d %H:%M')]"
           git push
