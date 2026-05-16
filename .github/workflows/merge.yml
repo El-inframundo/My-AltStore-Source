@@ -1,3 +1,4 @@
+```yaml
 name: Merge AltStore Sources
 
 on:
@@ -33,6 +34,9 @@ jobs:
           const sources = [
             // ========== المصادر العملاقة (آلاف التطبيقات) ==========
             { url: "https://repository.apptesters.org", name: "AppTesters (2000+ apps)" },
+            { url: "https://repository.apptesters.org/", name: "AppTesters Slash" },
+            { url: "https://ipa.thuthuatjb.com/repo", name: "ThuThuatJB Repo" },
+            { url: "https://fastsign.dev/repo.json", name: "FastSign Repo" },
             { url: "https://fastsign.dev/repo.lite.altstore.json", name: "Alan's Gigantic Repo (1000+ apps)" },
 
             // ========== المصادر الكبيرة جداً ==========
@@ -215,3 +219,4 @@ jobs:
           git add apps.json
           git diff --cached --quiet || git commit -m "chore: update merged store [$(date +'%Y-%m-%d %H:%M')]"
           git push
+```
