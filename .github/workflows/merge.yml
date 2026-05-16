@@ -1,0 +1,113 @@
+name: Merge AltStore Sources
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Axios
+        run: npm install axios
+
+      - name: Create merge script
+        run: |
+          cat > merge.js << 'EOF'
+          const fs = require('fs');
+          const axios = require('axios');
+
+          const sources = [
+            "https://repository.apptesters.org",
+            "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps_esign.json",
+            "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps.json",
+            "https://quarksources.github.io/dist/quantumsource.min.json",
+            "https://quarksources.github.io/dist/altstore-complete.min.json",
+            "https://altstore.oatmealdome.me/",
+            "https://alt.crystall1ne.dev/",
+            "https://ipa.cypwn.xyz/cypwn.json",
+            "https://wuxu1.github.io/wuxu-complete-plus.json",
+            "https://qnblackcat.github.io/AltStore/apps.json",
+            "https://alt.getutm.app",
+            "https://provenance-emu.com/apps.json",
+            "https://theodyssey.dev/altstore/odysseysource.json",
+            "https://taurine.app/altstore/taurinestore.json",
+            "https://bunduuk.github.io/altstore-source/apps.json",
+            "https://flyinghead.github.io/flycast-builds/altstore.json",
+            "https://raw.githubusercontent.com/vizunchik/AltStoreRus/master/apps.json",
+            "https://wuxu1.github.io/wuxu-complete.json"
+          ];
+
+          async function mergeSources() {
+            let allApps = [];
+
+            for (const source of sources) {
+              try {
+                console.log("Fetching:", source);
+
+                const response = await axios.get(source, {
+                  timeout: 15000
+                });
+
+                const data = response.data;
+
+                if (data.apps && Array.isArray(data.apps)) {
+                  allApps.push(...data.apps);
+                }
+
+              } catch (e) {
+                console.log("Failed:", source);
+              }
+            }
+
+            const uniqueApps = [];
+            const names = new Set();
+
+            for (const app of allApps) {
+              if (!names.has(app.name)) {
+                names.add(app.name);
+                uniqueApps.push(app);
+              }
+            }
+
+            const output = {
+              name: "Adnan Combined Store",
+              identifier: "com.adnan.combined",
+              subtitle: "Merged IPA Sources",
+              description: "Auto merged AltStore sources",
+              iconURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
+              apps: uniqueApps,
+              news: []
+            };
+
+            fs.writeFileSync(
+              "apps.json",
+              JSON.stringify(output, null, 2)
+            );
+
+            console.log("Done:", uniqueApps.length);
+          }
+
+          mergeSources();
+          EOF
+
+      - name: Run Merge Script
+        run: node merge.js
+
+      - name: Commit apps.json
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add apps.json
+          git commit -m "Update merged apps" || echo "No changes"
+          git push
