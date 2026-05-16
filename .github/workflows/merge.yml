@@ -1,4 +1,4 @@
-```yaml
+```yml
 name: Merge AltStore Sources
 
 on:
@@ -33,11 +33,12 @@ jobs:
 
           const sources = [
             // ========== المصادر العملاقة (آلاف التطبيقات) ==========
-            { url: "https://repository.apptesters.org", name: "AppTesters (2000+ apps)" },
+            { url: "https://repository.apptesters.org", name: "AppTesters (6882 apps)" },
             { url: "https://repository.apptesters.org/", name: "AppTesters Slash" },
-            { url: "https://ipa.thuthuatjb.com/repo", name: "ThuThuatJB Repo" },
-            { url: "https://fastsign.dev/repo.json", name: "FastSign Repo" },
-            { url: "https://fastsign.dev/repo.lite.altstore.json", name: "Alan's Gigantic Repo (1000+ apps)" },
+            { url: "https://ipa.thuthuatjb.com/repo", name: "TTJB Repo (6778 apps)" },
+            { url: "https://fastsign.dev/repo.json", name: "FastSign Repo (21018 apps)" },
+            { url: "https://fastsign.dev/repo.lite.altstore.json", name: "Alan's Gigantic Repo" },
+            { url: "https://api.unkeyapp.com/v1/apps", name: "UnKeySign (8660 apps)" },
 
             // ========== المصادر الكبيرة جداً ==========
             { url: "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps.json", name: "Swaggy AltStore" },
@@ -181,7 +182,7 @@ jobs:
               name: "Adnan Combined Store",
               identifier: "com.adnan.combined",
               subtitle: `${uniqueApps.length} apps from ${successSources} sources`,
-              description: `🔥 Auto-merged from ${successSources} AltStore sources. Updated every 6 hours.\n\n📊 ${uniqueApps.length} unique apps | ${successSources}/${sources.length} sources active\n\nIncludes: AppTesters, Alan's Gigantic Repo, Swaggy, CyPwn, Quantum, WuXu, QnBlackCat, OatmealDome, Crystall1ne, UTM, Provenance, Odyssey, Taurine, Bunduuk, Flycast, Vizunchik, YTLitePlus, PojavLauncher, iSH, Random, SideStore, Burrito, and more.`,
+              description: `🔥 Auto-merged from ${successSources} AltStore sources. Updated every 6 hours.\n\n📊 ${uniqueApps.length} unique apps | ${successSources}/${sources.length} sources active\n\nIncludes: AppTesters, FastSign, TTJB, UnKeySign, Swaggy, CyPwn, Quantum, WuXu, QnBlackCat, OatmealDome, Crystall1ne, UTM, Provenance, Odyssey, Taurine, Bunduuk, Flycast, Vizunchik, YTLitePlus, PojavLauncher, iSH, Random, SideStore, Burrito, and more.`,
               iconURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
               headerURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
               website: "https://github.com/",
