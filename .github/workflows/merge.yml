@@ -26,22 +26,20 @@ jobs:
 
       - name: Create merge script
         run: |
-          cat > merge.js << 'EOF'
+          cat > merge.js << 'SCRIPTEOF'
           const fs = require('fs');
           const axios = require('axios');
 
           const sources = [
-            "https://repository.apptesters.org",
-            "https://ipa.cypwn.xyz/cypwn.json",
+            "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps_esign.json",
+            "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps.json",
             "https://quarksources.github.io/dist/quantumsource.min.json",
             "https://quarksources.github.io/dist/altstore-complete.min.json",
-            "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps.json",
-            "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps_esign.json",
-            "https://wuxu1.github.io/wuxu-complete-plus.json",
-            "https://wuxu1.github.io/wuxu-complete.json",
-            "https://qnblackcat.github.io/AltStore/apps.json",
-            "https://alt.crystall1ne.dev/",
             "https://altstore.oatmealdome.me/",
+            "https://alt.crystall1ne.dev/",
+            "https://ipa.cypwn.xyz/cypwn.json",
+            "https://wuxu1.github.io/wuxu-complete-plus.json",
+            "https://qnblackcat.github.io/AltStore/apps.json",
             "https://alt.getutm.app",
             "https://provenance-emu.com/apps.json",
             "https://theodyssey.dev/altstore/odysseysource.json",
@@ -49,102 +47,92 @@ jobs:
             "https://bunduuk.github.io/altstore-source/apps.json",
             "https://flyinghead.github.io/flycast-builds/altstore.json",
             "https://raw.githubusercontent.com/vizunchik/AltStoreRus/master/apps.json",
-            "https://burritosoftware.github.io/altstore/channels.json",
-            "https://raw.githubusercontent.com/Balackburn/YTLitePlusAltstore/main/apps.json",
-            "https://raw.githubusercontent.com/arichornlover/AltStore-Repo/main/apps.json",
-            "https://raw.githubusercontent.com/PojavLauncherTeam/PojavLauncher_iOS/main/apps.json"
+            "https://wuxu1.github.io/wuxu-complete.json"
           ];
 
-          async function fetchJSON(url) {
-            try {
-              console.log("Fetching:", url);
-              const response = await axios.get(url, {
-                timeout: 30000,
-                headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AltStore-Merger/1.0)' }
-              });
-
-              let data = response.data;
-
-              // بعض المصادر يكون الـ JSON ملفوف في key ثانوي
-              if (data.data && data.data.apps) {
-                data = data.data;
-              }
-
-              return data;
-            } catch (e) {
-              console.log("  ⚠️ Failed:", url, e.message);
-              return null;
-            }
-          }
-
           async function mergeSources() {
-            let allApps = [];
-            const seenBundleIDs = {};
+            const appsMap = new Map(); // key: bundleIdentifier, value: app object
+            let totalFetched = 0;
+            let failedSources = [];
 
             for (const source of sources) {
-              const data = await fetchJSON(source);
-              if (!data) continue;
+              try {
+                console.log("Fetching:", source);
 
-              let apps = [];
-              if (data.apps && Array.isArray(data.apps)) {
-                apps = data.apps;
-              } else if (Array.isArray(data)) {
-                apps = data;
-              } else {
-                console.log("  ⚠️ No apps array found");
-                continue;
-              }
+                const response = await axios.get(source, {
+                  timeout: 20000,
+                  headers: { 'User-Agent': 'Mozilla/5.0' }
+                });
 
-              console.log("  ✅ Apps found:", apps.length);
+                const data = response.data;
 
-              for (const app of apps) {
-                const bundleID = app.bundleIdentifier;
-                if (!bundleID) {
-                  allApps.push(app);
-                  continue;
-                }
-
-                if (seenBundleIDs[bundleID]) {
-                  // دمج الإصدارات من مصادر مختلفة
-                  const existing = seenBundleIDs[bundleID];
-                  if (app.versions && Array.isArray(app.versions)) {
-                    if (!existing.versions) existing.versions = [];
-                    for (const v of app.versions) {
-                      const exists = existing.versions.some(
-                        ev => ev.version === v.version && ev.date === v.date
-                      );
-                      if (!exists) existing.versions.push(v);
+                if (data.apps && Array.isArray(data.apps)) {
+                  for (const app of data.apps) {
+                    const key = app.bundleIdentifier || app.name || `unknown-${Math.random()}`;
+                    
+                    if (appsMap.has(key)) {
+                      const existing = appsMap.get(key);
+                      // دمج الإصدارات إذا كانت موجودة في التطبيق الجديد
+                      if (app.versions && Array.isArray(app.versions)) {
+                        if (!existing.versions) {
+                          existing.versions = app.versions;
+                        } else {
+                          const existingVersions = new Set(
+                            existing.versions.map(v => v.version || v.downloadURL)
+                          );
+                          for (const v of app.versions) {
+                            const vKey = v.version || v.downloadURL;
+                            if (!existingVersions.has(vKey)) {
+                              existing.versions.push(v);
+                              existingVersions.add(vKey);
+                            }
+                          }
+                        }
+                      }
+                      // تحديث الأيقونات/المعلومات إذا كانت مفقودة
+                      if (!existing.iconURL && app.iconURL) existing.iconURL = app.iconURL;
+                      if (!existing.subtitle && app.subtitle) existing.subtitle = app.subtitle;
+                    } else {
+                      appsMap.set(key, { ...app });
                     }
+                    
+                    totalFetched++;
                   }
-                  // تحديث معلومات التطبيق إذا كانت أحدث
-                  if (!existing.iconURL && app.iconURL) existing.iconURL = app.iconURL;
-                  if (!existing.developerName && app.developerName) existing.developerName = app.developerName;
+                  console.log(`  ✅ ${data.apps.length} apps`);
                 } else {
-                  seenBundleIDs[bundleID] = app;
-                  allApps.push(app);
+                  console.log(`  ⚠️ No apps array found`);
                 }
+              } catch (e) {
+                console.log(`  ❌ Failed: ${source} — ${e.message}`);
+                failedSources.push(source);
               }
             }
+
+            const uniqueApps = Array.from(appsMap.values());
 
             const output = {
               name: "Adnan Combined Store",
               identifier: "com.adnan.combined",
-              subtitle: "Merged IPA Sources (Deduplicated)",
-              description: "Auto-merged AltStore sources from 22+ repositories. Updated every 6 hours via GitHub Actions.",
-              iconURL: "https://altstore.io/img/altstore-logo.png",
+              subtitle: `${uniqueApps.length} apps from ${sources.length - failedSources.length} sources`,
+              description: `Auto-merged AltStore sources. Updated every 6 hours.\nSources failed: ${failedSources.length > 0 ? failedSources.join(', ') : 'None'}`,
+              iconURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
               headerURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
               website: "https://github.com/",
               tintColor: "#3498db",
-              apps: allApps,
+              apps: uniqueApps,
               news: []
             };
 
             fs.writeFileSync("apps.json", JSON.stringify(output, null, 2));
-            console.log("\n✅ Done! Total unique apps:", allApps.length);
+
+            console.log(`\n✅ Done!`);
+            console.log(`   Total apps fetched (with duplicates): ${totalFetched}`);
+            console.log(`   Unique apps (deduplicated): ${uniqueApps.length}`);
+            console.log(`   Sources failed: ${failedSources.length > 0 ? failedSources.join(', ') : 'None'}`);
           }
 
           mergeSources();
-          EOF
+          SCRIPTEOF
 
       - name: Run Merge Script
         run: node merge.js
@@ -154,5 +142,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add apps.json
-          git diff --cached --quiet || git commit -m "chore: update merged AltStore sources [$(date +'%Y-%m-%d %H:%M')]"
+          git diff --cached --quiet || git commit -m "chore: update merged store [$(date +'%Y-%m-%d %H:%M')]"
           git push
