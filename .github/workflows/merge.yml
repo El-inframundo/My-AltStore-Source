@@ -31,49 +31,93 @@ jobs:
           const axios = require('axios');
 
           const sources = [
-            { url: "https://repository.apptesters.org", name: "AppTesters Repo" },
-            { url: "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps_esign.json", name: "Swaggy ESign" },
+            // ========== المصادر العملاقة (آلاف التطبيقات) ==========
+            { url: "https://repository.apptesters.org", name: "AppTesters (2000+ apps)" },
+            { url: "https://fastsign.dev/repo.lite.altstore.json", name: "Alan's Gigantic Repo (1000+ apps)" },
+
+            // ========== المصادر الكبيرة جداً ==========
             { url: "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps.json", name: "Swaggy AltStore" },
+            { url: "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps_esign.json", name: "Swaggy ESign" },
+
+            // ========== QuarkSources ==========
             { url: "https://quarksources.github.io/dist/quantumsource.min.json", name: "Quantum Source" },
             { url: "https://quarksources.github.io/dist/altstore-complete.min.json", name: "AltStore Complete" },
-            { url: "https://altstore.oatmealdome.me/", name: "OatmealDome" },
-            { url: "https://alt.crystall1ne.dev/", name: "Crystall1ne" },
-            { url: "https://ipa.cypwn.xyz/cypwn.json", name: "CyPwn" },
-            { url: "https://wuxu1.github.io/wuxu-complete-plus.json", name: "WuXu++" },
-            { url: "https://qnblackcat.github.io/AltStore/apps.json", name: "QnBlackCat" },
-            { url: "https://alt.getutm.app", name: "UTM" },
-            { url: "https://provenance-emu.com/apps.json", name: "Provenance" },
-            { url: "https://theodyssey.dev/altstore/odysseysource.json", name: "Odyssey" },
-            { url: "https://taurine.app/altstore/taurinestore.json", name: "Taurine" },
-            { url: "https://bunduuk.github.io/altstore-source/apps.json", name: "Bunduuk" },
-            { url: "https://flyinghead.github.io/flycast-builds/altstore.json", name: "Flycast" },
-            { url: "https://raw.githubusercontent.com/vizunchik/AltStoreRus/master/apps.json", name: "Vizunchik" },
-            { url: "https://wuxu1.github.io/wuxu-complete.json", name: "WuXu Basic" }
+            { url: "https://quarksources.github.io/quantumsource++.json", name: "Quantum Source++" },
+
+            // ========== WuXu ==========
+            { url: "https://wuxu1.github.io/wuxu-complete-plus.json", name: "WuXu Library++" },
+            { url: "https://wuxu1.github.io/wuxu-complete.json", name: "WuXu Library" },
+
+            // ========== CyPwn ==========
+            { url: "https://ipa.cypwn.xyz/cypwn.json", name: "CyPwn IPA Library" },
+
+            // ========== QnBlackCat ==========
+            { url: "https://qnblackcat.github.io/AltStore/apps.json", name: "QnBlackCat Repo" },
+            { url: "https://raw.githubusercontent.com/qnblackcat/AltStore/gh-pages/apps.json", name: "QnBlackCat GitHub" },
+
+            // ========== المصادر المتوسطة ==========
+            { url: "https://altstore.oatmealdome.me/", name: "OatmealDome (DolphiniOS)" },
+            { url: "https://alt.crystall1ne.dev/", name: "Crystall1ne (Amethyst/Pojav)" },
+            { url: "https://alt.getutm.app", name: "UTM Repository" },
+            { url: "https://provenance-emu.com/apps.json", name: "Provenance Emulator" },
+            { url: "https://theodyssey.dev/altstore/odysseysource.json", name: "Odyssey Jailbreak" },
+            { url: "https://taurine.app/altstore/taurinestore.json", name: "Taurine Jailbreak" },
+            { url: "https://bunduuk.github.io/altstore-source/apps.json", name: "Bunduuk AltStore" },
+            { url: "https://flyinghead.github.io/flycast-builds/altstore.json", name: "Flycast (Dreamcast)" },
+            { url: "https://raw.githubusercontent.com/vizunchik/AltStoreRus/master/apps.json", name: "Vizunchik (AltStoreRus)" },
+            { url: "https://raw.githubusercontent.com/Balackburn/YTLitePlusAltstore/main/apps.json", name: "YTLitePlus" },
+            { url: "https://raw.githubusercontent.com/arichornlover/AltStore-Repo/main/apps.json", name: "Arichornlover Repo" },
+            { url: "https://raw.githubusercontent.com/PojavLauncherTeam/PojavLauncher_iOS/main/apps.json", name: "PojavLauncher" },
+            { url: "https://ish.app/altstore.json", name: "iSH Shell" },
+            { url: "https://randomblock1.com/altstore/apps.json", name: "Random Source" },
+            { url: "https://alts.lao.sb", name: "Niantic Wayfarer" },
+            { url: "https://floridaman7588.me/altjb/altsource.json", name: "FloridaMan Source" },
+            { url: "https://pokemmo.com/altstore/", name: "PokeMMO" },
+            { url: "https://altstore.9ani.app", name: "NineAnimator" },
+            { url: "https://community-apps.sidestore.io/sidecommunity.json", name: "SideStore Community" },
+            { url: "https://burritosoftware.github.io/altstore/channels/burritosource.json", name: "Burrito Software" },
+            { url: "https://burritosoftware.github.io/altstore/channels.json", name: "Burrito Channels" },
+            { url: "https://cdn.altstore.io/file/altstore/apps.json", name: "Official AltStore Source" },
+            { url: "https://altsource.imfast.io/apps.json", name: "AltSource imfast" },
+            { url: "https://hann8n.github.io/JackCracks/MovieboxPro.json", name: "JackCracks MovieBoxPro" },
+            { url: "https://www.appfair.net/fairapps-ios.json", name: "AppFair iOS" },
+            { url: "https://raw.githubusercontent.com/FurkanSimsir/channels.github.io/master/channels.json", name: "Furkan Simsir" }
           ];
 
           async function mergeSources() {
             const appsMap = new Map();
             let totalFetched = 0;
-            let successCount = 0;
+            let successSources = 0;
+            const failedSourcesList = [];
 
-            console.log("=".repeat(60));
-            console.log("STARTING MERGE — Checking each source...");
-            console.log("=".repeat(60));
+            console.log("=".repeat(70));
+            console.log("🔥 ADNAN COMBINED STORE - MERGE ENGINE");
+            console.log("📦 Sources configured: " + sources.length);
+            console.log("=".repeat(70));
 
             for (const source of sources) {
               try {
-                process.stdout.write(`[${source.name}] Fetching... `);
+                process.stdout.write(`[${source.name}] `);
 
                 const response = await axios.get(source.url, {
-                  timeout: 30000,
-                  headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AltStore-Merger/1.0)' }
+                  timeout: 35000,
+                  headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AltStore-Merger/3.0)' }
                 });
 
                 const data = response.data;
+                let appsArray = [];
 
-                if (data.apps && Array.isArray(data.apps)) {
+                if (data && data.apps && Array.isArray(data.apps)) {
+                  appsArray = data.apps;
+                } else if (data && Array.isArray(data)) {
+                  appsArray = data;
+                } else if (data && data.data && data.data.apps && Array.isArray(data.data.apps)) {
+                  appsArray = data.data.apps;
+                }
+
+                if (appsArray.length > 0) {
                   let sourceCount = 0;
-                  for (const app of data.apps) {
+                  for (const app of appsArray) {
                     const key = app.bundleIdentifier || app.name || `unknown-${Math.random()}`;
 
                     if (appsMap.has(key)) {
@@ -96,55 +140,66 @@ jobs:
                       }
                       if (!existing.iconURL && app.iconURL) existing.iconURL = app.iconURL;
                       if (!existing.subtitle && app.subtitle) existing.subtitle = app.subtitle;
+                      if (!existing.developerName && app.developerName) existing.developerName = app.developerName;
                     } else {
                       appsMap.set(key, { ...app });
                     }
                     sourceCount++;
                     totalFetched++;
                   }
-                  successCount++;
-                  console.log(`✅ ${sourceCount} apps (${data.apps.length} total in source)`);
+                  successSources++;
+                  console.log(`✅ ${sourceCount} apps`);
                 } else {
-                  console.log(`⚠️ No 'apps' array — data type: ${typeof data}, keys: ${data ? Object.keys(data).join(', ') : 'null'}`);
+                  console.log(`⚠️ 0 apps`);
                 }
               } catch (e) {
-                console.log(`❌ FAILED — ${e.message}`);
+                console.log(`❌ FAILED: ${e.message}`);
+                failedSourcesList.push(source.name);
               }
             }
 
             const uniqueApps = Array.from(appsMap.values());
 
-            console.log("\n" + "=".repeat(60));
-            console.log("RESULTS:");
-            console.log("  Sources succeeded:  " + successCount + "/" + sources.length);
-            console.log("  Sources failed:     " + (sources.length - successCount));
-            console.log("  Total fetched:      " + totalFetched);
-            console.log("  Unique (final):     " + uniqueApps.length);
-            console.log("=".repeat(60));
+            console.log("\n" + "=".repeat(70));
+            console.log("📊 FINAL RESULTS:");
+            console.log("   ✅ Sources succeeded: " + successSources + "/" + sources.length);
+            console.log("   ❌ Sources failed:    " + (sources.length - successSources));
+            console.log("   📥 Total fetched:     " + totalFetched);
+            console.log("   🎯 Unique apps:       " + uniqueApps.length);
+            console.log("=".repeat(70));
 
-            // طباعة أسماء المصادر اللي فشلت
-            if (successCount < sources.length) {
-              console.log("\nFAILED SOURCES:");
-              for (const source of sources) {
-                // We can't easily track which failed without refactoring, but the console output above shows it
-              }
+            if (failedSourcesList.length > 0) {
+              console.log("\n⚠️ FAILED SOURCES:");
+              failedSourcesList.forEach(s => console.log("   • " + s));
             }
 
             const output = {
               name: "Adnan Combined Store",
               identifier: "com.adnan.combined",
-              subtitle: `${uniqueApps.length} apps from ${successCount} sources`,
-              description: `Auto-merged AltStore sources. Updated every 6 hours.\nSuccessful sources: ${successCount}/${sources.length}`,
+              subtitle: `${uniqueApps.length} apps from ${successSources} sources`,
+              description: `🔥 Auto-merged from ${successSources} AltStore sources. Updated every 6 hours.\n\n📊 ${uniqueApps.length} unique apps | ${successSources}/${sources.length} sources active\n\nIncludes: AppTesters, Alan's Gigantic Repo, Swaggy, CyPwn, Quantum, WuXu, QnBlackCat, OatmealDome, Crystall1ne, UTM, Provenance, Odyssey, Taurine, Bunduuk, Flycast, Vizunchik, YTLitePlus, PojavLauncher, iSH, Random, SideStore, Burrito, and more.`,
               iconURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
               headerURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
               website: "https://github.com/",
-              tintColor: "#3498db",
+              tintColor: "#e74c3c",
               apps: uniqueApps,
-              news: []
+              news: [
+                {
+                  title: `🚀 ${uniqueApps.length} Apps Ready`,
+                  identifier: "store-update",
+                  caption: `Merged from ${successSources} sources. Updated automatically every 6 hours.`,
+                  date: new Date().toISOString().split('T')[0],
+                  tintColor: "e74c3c",
+                  notify: false
+                }
+              ]
             };
 
             fs.writeFileSync("apps.json", JSON.stringify(output, null, 2));
-            console.log("\n✅ apps.json written successfully!");
+
+            const fileSizeMB = (fs.statSync("apps.json").size / 1024 / 1024).toFixed(2);
+            console.log(`\n✅ apps.json written! (${fileSizeMB} MB)`);
+            console.log(`🔗 https://raw.githubusercontent.com/El-inframundo/My-AltStore-Source/main/apps.json`);
           }
 
           mergeSources();
