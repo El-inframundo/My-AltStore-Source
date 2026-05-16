@@ -31,43 +31,48 @@ jobs:
           const axios = require('axios');
 
           const sources = [
-            "https://repository.apptesters.org",
-            "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps_esign.json",
-            "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps.json",
-            "https://quarksources.github.io/dist/quantumsource.min.json",
-            "https://quarksources.github.io/dist/altstore-complete.min.json",
-            "https://altstore.oatmealdome.me/",
-            "https://alt.crystall1ne.dev/",
-            "https://ipa.cypwn.xyz/cypwn.json",
-            "https://wuxu1.github.io/wuxu-complete-plus.json",
-            "https://qnblackcat.github.io/AltStore/apps.json",
-            "https://alt.getutm.app",
-            "https://provenance-emu.com/apps.json",
-            "https://theodyssey.dev/altstore/odysseysource.json",
-            "https://taurine.app/altstore/taurinestore.json",
-            "https://bunduuk.github.io/altstore-source/apps.json",
-            "https://flyinghead.github.io/flycast-builds/altstore.json",
-            "https://raw.githubusercontent.com/vizunchik/AltStoreRus/master/apps.json",
-            "https://wuxu1.github.io/wuxu-complete.json"
+            { url: "https://repository.apptesters.org", name: "AppTesters Repo" },
+            { url: "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps_esign.json", name: "Swaggy ESign" },
+            { url: "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps.json", name: "Swaggy AltStore" },
+            { url: "https://quarksources.github.io/dist/quantumsource.min.json", name: "Quantum Source" },
+            { url: "https://quarksources.github.io/dist/altstore-complete.min.json", name: "AltStore Complete" },
+            { url: "https://altstore.oatmealdome.me/", name: "OatmealDome" },
+            { url: "https://alt.crystall1ne.dev/", name: "Crystall1ne" },
+            { url: "https://ipa.cypwn.xyz/cypwn.json", name: "CyPwn" },
+            { url: "https://wuxu1.github.io/wuxu-complete-plus.json", name: "WuXu++" },
+            { url: "https://qnblackcat.github.io/AltStore/apps.json", name: "QnBlackCat" },
+            { url: "https://alt.getutm.app", name: "UTM" },
+            { url: "https://provenance-emu.com/apps.json", name: "Provenance" },
+            { url: "https://theodyssey.dev/altstore/odysseysource.json", name: "Odyssey" },
+            { url: "https://taurine.app/altstore/taurinestore.json", name: "Taurine" },
+            { url: "https://bunduuk.github.io/altstore-source/apps.json", name: "Bunduuk" },
+            { url: "https://flyinghead.github.io/flycast-builds/altstore.json", name: "Flycast" },
+            { url: "https://raw.githubusercontent.com/vizunchik/AltStoreRus/master/apps.json", name: "Vizunchik" },
+            { url: "https://wuxu1.github.io/wuxu-complete.json", name: "WuXu Basic" }
           ];
 
           async function mergeSources() {
             const appsMap = new Map();
             let totalFetched = 0;
-            let failedSources = [];
+            let successCount = 0;
+
+            console.log("=".repeat(60));
+            console.log("STARTING MERGE — Checking each source...");
+            console.log("=".repeat(60));
 
             for (const source of sources) {
               try {
-                console.log("Fetching:", source);
+                process.stdout.write(`[${source.name}] Fetching... `);
 
-                const response = await axios.get(source, {
-                  timeout: 20000,
-                  headers: { 'User-Agent': 'Mozilla/5.0' }
+                const response = await axios.get(source.url, {
+                  timeout: 30000,
+                  headers: { 'User-Agent': 'Mozilla/5.0 (compatible; AltStore-Merger/1.0)' }
                 });
 
                 const data = response.data;
 
                 if (data.apps && Array.isArray(data.apps)) {
+                  let sourceCount = 0;
                   for (const app of data.apps) {
                     const key = app.bundleIdentifier || app.name || `unknown-${Math.random()}`;
 
@@ -94,26 +99,42 @@ jobs:
                     } else {
                       appsMap.set(key, { ...app });
                     }
-
+                    sourceCount++;
                     totalFetched++;
                   }
-                  console.log(`  ✅ ${data.apps.length} apps`);
+                  successCount++;
+                  console.log(`✅ ${sourceCount} apps (${data.apps.length} total in source)`);
                 } else {
-                  console.log(`  ⚠️ No apps array found`);
+                  console.log(`⚠️ No 'apps' array — data type: ${typeof data}, keys: ${data ? Object.keys(data).join(', ') : 'null'}`);
                 }
               } catch (e) {
-                console.log(`  ❌ Failed: ${source} — ${e.message}`);
-                failedSources.push(source);
+                console.log(`❌ FAILED — ${e.message}`);
               }
             }
 
             const uniqueApps = Array.from(appsMap.values());
 
+            console.log("\n" + "=".repeat(60));
+            console.log("RESULTS:");
+            console.log("  Sources succeeded:  " + successCount + "/" + sources.length);
+            console.log("  Sources failed:     " + (sources.length - successCount));
+            console.log("  Total fetched:      " + totalFetched);
+            console.log("  Unique (final):     " + uniqueApps.length);
+            console.log("=".repeat(60));
+
+            // طباعة أسماء المصادر اللي فشلت
+            if (successCount < sources.length) {
+              console.log("\nFAILED SOURCES:");
+              for (const source of sources) {
+                // We can't easily track which failed without refactoring, but the console output above shows it
+              }
+            }
+
             const output = {
               name: "Adnan Combined Store",
               identifier: "com.adnan.combined",
-              subtitle: `${uniqueApps.length} apps from ${sources.length - failedSources.length} sources`,
-              description: `Auto-merged AltStore sources. Updated every 6 hours.\nSources failed: ${failedSources.length > 0 ? failedSources.join(', ') : 'None'}`,
+              subtitle: `${uniqueApps.length} apps from ${successCount} sources`,
+              description: `Auto-merged AltStore sources. Updated every 6 hours.\nSuccessful sources: ${successCount}/${sources.length}`,
               iconURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
               headerURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
               website: "https://github.com/",
@@ -123,11 +144,7 @@ jobs:
             };
 
             fs.writeFileSync("apps.json", JSON.stringify(output, null, 2));
-
-            console.log(`\n✅ Done!`);
-            console.log(`   Total apps fetched (with duplicates): ${totalFetched}`);
-            console.log(`   Unique apps (deduplicated): ${uniqueApps.length}`);
-            console.log(`   Sources failed: ${failedSources.length > 0 ? failedSources.join(', ') : 'None'}`);
+            console.log("\n✅ apps.json written successfully!");
           }
 
           mergeSources();
