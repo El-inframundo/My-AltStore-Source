@@ -31,6 +31,7 @@ jobs:
           const axios = require('axios');
 
           const sources = [
+            "https://repository.apptesters.org",
             "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps_esign.json",
             "https://raw.githubusercontent.com/swaggyP36000/TrollStore-IPAs/main/apps.json",
             "https://quarksources.github.io/dist/quantumsource.min.json",
@@ -51,7 +52,7 @@ jobs:
           ];
 
           async function mergeSources() {
-            const appsMap = new Map(); // key: bundleIdentifier, value: app object
+            const appsMap = new Map();
             let totalFetched = 0;
             let failedSources = [];
 
@@ -69,10 +70,9 @@ jobs:
                 if (data.apps && Array.isArray(data.apps)) {
                   for (const app of data.apps) {
                     const key = app.bundleIdentifier || app.name || `unknown-${Math.random()}`;
-                    
+
                     if (appsMap.has(key)) {
                       const existing = appsMap.get(key);
-                      // دمج الإصدارات إذا كانت موجودة في التطبيق الجديد
                       if (app.versions && Array.isArray(app.versions)) {
                         if (!existing.versions) {
                           existing.versions = app.versions;
@@ -89,13 +89,12 @@ jobs:
                           }
                         }
                       }
-                      // تحديث الأيقونات/المعلومات إذا كانت مفقودة
                       if (!existing.iconURL && app.iconURL) existing.iconURL = app.iconURL;
                       if (!existing.subtitle && app.subtitle) existing.subtitle = app.subtitle;
                     } else {
                       appsMap.set(key, { ...app });
                     }
-                    
+
                     totalFetched++;
                   }
                   console.log(`  ✅ ${data.apps.length} apps`);
