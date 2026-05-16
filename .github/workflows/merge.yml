@@ -7,6 +7,9 @@ on:
 
 jobs:
   merge:
+    permissions:
+      contents: write
+
     runs-on: ubuntu-latest
 
     steps:
@@ -74,7 +77,7 @@ jobs:
             const names = new Set();
 
             for (const app of allApps) {
-              if (!names.has(app.name)) {
+              if (app.name && !names.has(app.name)) {
                 names.add(app.name);
                 uniqueApps.push(app);
               }
@@ -86,6 +89,9 @@ jobs:
               subtitle: "Merged IPA Sources",
               description: "Auto merged AltStore sources",
               iconURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
+              headerURL: "https://raw.githubusercontent.com/quarksources/quarksources.github.io/master/icon.png",
+              website: "https://github.com/",
+              tintColor: "#3498db",
               apps: uniqueApps,
               news: []
             };
